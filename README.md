@@ -43,3 +43,99 @@ It combines **barcode-based slot allocation**, **sensor-based monitoring**, and 
 ---
 
 ## 🏗 Project Structure
+ESP_32_SMART_INVENTORY_MANAGMENT/
+│
+├── ESP_LCD_20X4/ # Primary Controller Firmware
+│ ├── main/ # LCD control, TCP server, allocation logic
+│ ├── CMakeLists.txt
+│ └── sdkconfig
+│
+├── ESP_32_SENSOR_TRANSMITTER/ # Secondary Controller Firmware
+│ ├── main/ # Sensor reading & TCP client code
+│ ├── CMakeLists.txt
+│ └── sdkconfig
+│
+└── README.md # Project documentation
+//////////////////////////////////////////////////////////////////////////////
+2️⃣ Build and Flash
+Primary Controller
+cd ESP_LCD_20X4
+idf.py set-target esp32
+idf.py build
+idf.py -p <PORT> flash monitor
+
+Secondary Controller
+cd ESP_32_SENSOR_TRANSMITTER
+idf.py set-target esp32
+idf.py build
+idf.py -p <PORT> flash monitor
+
+
+Replace <PORT> with your ESP32's COM/serial port.
+/////////////////////////////////////////////////////////////////////////////////
+🔌 Hardware Pinout
+Primary Controller
+
+| Component            | Pin(s)           |
+| -------------------- | ---------------- |
+| LCD (I²C)            | SDA: 21, SCL: 22 |
+| LED – Temp Alert     | GPIO 12          |
+| LED – Humidity Alert | GPIO 13          |
+| LED – Spill Alert    | GPIO 27          |
+| Button – Scan Toggle | GPIO 2           |
+| Button – Show Last   | GPIO 5           |
+
+
+Secondary Controller
+| Component     | Pin(s)                 |
+| ------------- | ---------------------- |
+| AHT20         | I²C pins as configured |
+| BMP280/BME280 | I²C pins as configured |
+| IR Sensors    | Multiplexed GPIO setup |
+| Spill Sensor  | Configured GPIO        |
+
+///////////////////////////////////////////////////////////////////////////////////////
+📡 Network Configuration
+
+Primary Controller – SoftAP Mode
+
+SSID: ESPBarTest
+
+Password: test1234
+
+Secondary Controller – TCP Client
+
+Connects to Primary AP
+
+Sends data as: slot1,slot2,...,spill,tempC,humidity
+//////////////////////////////////////////////////////////////////////////////////////
+🛠 Troubleshooting
+| Issue                 | Possible Cause           | Fix                             |
+| --------------------- | ------------------------ | ------------------------------- |
+| LCD not displaying    | Wrong I²C address        | Scan & update address in code   |
+| No sensor data        | Network drop or wrong IP | Verify Wi-Fi and TCP settings   |
+| Wrong barcode parsing | Bad checksum             | Implement EAN-8 validation      |
+| LEDs always on        | Bad thresholds           | Adjust in code                  |
+| Build errors          | ESP-IDF mismatch         | Install correct ESP-IDF version |
+///////////////////////////////////////////////////////////////////////////////////////
+
+eferences & Acknowledgements
+
+This project uses various references and code that is inspired by:
+
+Muhammad Raheel Naseem – Operating 20x4 I2C LCD with ESP32
+https://github.com/MuhammadRaheelNaseem/Operating-20x4-I2C-LCD-With-ESP32
+
+peff74 – ESP AHT20 BMP280
+https://github.com/peff74/ESP_AHT20_BMP280
+
+## 📜 License
+This project is developed as part of the **Fanshawe College – London, Ontario**  
+**Embedded Systems Development 3 (ELNC-6012)** course.  
+It is intended solely for **educational and academic purposes**.
+
+- Use this project **at your own discretion and risk**.  
+- **Not for commercial use** or redistribution without permission.  
+- The authors and Fanshawe College hold **no responsibility** for any misuse or damages arising from the use of this code.
+
+© 2025 Fanshawe College – All Rights Reserved.
