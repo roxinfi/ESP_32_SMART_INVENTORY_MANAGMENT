@@ -1,3 +1,14 @@
+/*==========================================================================================
+File Name:	sensors.h
+Author:		Vraj Patel, Samip Patel, Mihir Jariwala, Vamseedhar Reddy
+Date:		10/07/2025
+Modified:	None
+© Fanshawe College, 2025
+
+Description: This file contains the definitions and function prototypes for the sensor management
+system (IR, spill), including the BMX-20 sensor.
+===========================================================================================*/
+
 #ifndef SENSORS_H
 #define SENSORS_H
 

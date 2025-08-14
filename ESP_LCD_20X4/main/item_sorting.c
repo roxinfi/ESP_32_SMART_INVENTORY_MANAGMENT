@@ -1,7 +1,28 @@
+/*==================================================================================================
+File Name:	item_sorting.c
+Author:		Vraj Patel, Mihir Jariwala
+Date:		12/07/2025
+Modified:	27/07/2025
+© Fanshawe College, 2025
+
+Description: This file contains the implementation of the item sorting module,
+including functions for parsing and handling item information.
+==================================================================================================*/
+
+
 #include "item_sorting.h"
 #include <string.h>
 #include <ctype.h>
 
+/*>>> _strcasecmp: ==========================================================
+Author:		Vraj Patel, Mihir Jariwala
+Date:		12/07/2025
+Modified:	None
+Desc:		This function will perform a case-insensitive string comparison.
+Input: 		- a: Pointer to the first string
+			- b: Pointer to the second string
+Returns:	-1 if a < b, 0 if a == b, 1 if a > b
+ ============================================================================*/
 static int _strcasecmp(const char *a, const char *b) {
     // simple case‑insensitive compare
     while (*a && *b) {
@@ -10,8 +31,18 @@ static int _strcasecmp(const char *a, const char *b) {
         if (ca != cb) return (ca < cb) ? -1 : 1;
     }
     return (*a == *b) ? 0 : ((*a) ? 1 : -1);
-}
+}// eo _strcasecmp::
 
+
+/*>>> item_sorting_parse: ==========================================================
+Author:		Vraj Patel, Mihir Jariwala
+Date:		12/07/2025
+Modified:	None
+Desc:		This function will parse a text string into an item_info_t structure.
+Input: 		- txt: Pointer to the input text string
+			- out: Pointer to the output item_info_t structure
+Returns:	true on success, false on failure.
+ ============================================================================*/
 bool item_sorting_parse(const char *txt, item_info_t *out) {
     if (!txt || !out) return false;
 
@@ -53,8 +84,16 @@ bool item_sorting_parse(const char *txt, item_info_t *out) {
     }
 
     return true;
-}
+}// eo item_sorting_parse::
 
+/*>>> item_sorting_size_string: ==========================================================
+Author:		Vraj Patel, Mihir Jariwala
+Date:		12/07/2025
+Modified:	None
+Desc:		This function will return a string representation of the item size.
+Input: 		- s: The item size enum value
+Returns:	A pointer to the corresponding string.
+ ============================================================================*/
 const char* item_sorting_size_string(item_size_t s) {
     switch (s) {
     case SIZE_SMALL:  return "SMALL";
@@ -62,20 +101,38 @@ const char* item_sorting_size_string(item_size_t s) {
     case SIZE_LARGE:  return "LARGE";
     default:          return "UNKNOWN";
     }
-}
+}// eo item_sorting_size_string::
 
+
+/*>>> item_sorting_type_string: ==========================================================
+Author:		Vraj Patel, Mihir Jariwala
+Date:		12/07/2025
+Modified:	27/07/2025
+Desc:		This function will return a string representation of the item type.
+Input: 		- t: The item type enum value
+Returns:	A pointer to the corresponding string.
+ ============================================================================*/
 const char* item_sorting_type_string(item_type_t t) {
     switch (t) {
     case TYPE_FROZEN: return "FROZEN";
     case TYPE_DRY:    return "NORMAL";
     default:          return "UNKNOWN";
     }
-}
+}// eo item_sorting_type_string::
 
+
+/*>>> item_sorting_phase_string: ==========================================================
+Author:		Vraj Patel, Mihir Jariwala
+Date:		12/07/2025
+Modified:	27/07/2025
+Desc:		This function will return a string representation of the item phase.
+Input: 		- p: The item phase enum value
+Returns:	A pointer to the corresponding string.
+ ============================================================================*/
 const char* item_sorting_phase_string(item_phase_t p) {
     switch (p) {
     case PHASE_SOLID:  return "SOLID";
     case PHASE_LIQUID: return "LIQUID";
     default:           return "UNKNOWN";
     }
-}
+}// eo item_sorting_phase_string::

@@ -1,3 +1,14 @@
+/*================================================================================================
+File Name:	BMX_20.h
+Author:		Vraj Patel, Samip Patel
+Date:		10/07/2025
+Modified:	None
+© Fanshawe College, 2025
+
+Description: This file contains the definition of the BMX-20 sensor driver,
+including data structures and function prototypes.
+================================================================================================*/
+
 // BMX_20.h
 #ifndef BMX_20_H
 #define BMX_20_H

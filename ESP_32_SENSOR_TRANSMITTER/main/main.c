@@ -1,3 +1,14 @@
+/*===================================================================================================
+File Name:	main.c
+Author:		Vraj Patel
+Date:		17/07/2025
+Modified:	None
+© Fanshawe College, 2025
+
+Description: This file contains the main application logic for the Smart shelf Inventory Management project for its Secondary Controller,
+including initialization, task management, and event handling.
+=========================================================================================================*/
+
 // main.c  —— Secondary ESP32: reads IR/spill + T/H, sends to primary over TCP
 
 #include <string.h>
@@ -25,15 +36,24 @@
 // your sensor abstraction (IR, spill, BMX20)
 #include "sensors.h"
 
-static const char *TAG       = "SECONDARY";
-static const char *TAG_WIFI  = "WIFI";
+static const char *TAG       = "SECONDARY"; // Tag for logging
+static const char *TAG_WIFI  = "WIFI"; // Tag for Wi-Fi events
 
-#define AP_SSID       "ESPBarTest"
-#define AP_PASS       "test1234"
-#define PRIMARY_IP    "192.168.4.1"
-#define PRIMARY_PORT  3333
+#define AP_SSID       "ESPBarTest" // Access Point SSID
+#define AP_PASS       "test1234"    // Access Point Password
+#define PRIMARY_IP    "192.168.4.1"  // Primary Controller IP
+#define PRIMARY_PORT  3333           // Primary Controller port
 
 // — Wi‑Fi Station setup —  
+
+/*>>> wifi_init_sta: ======================================================================
+Author: Vraj Patel
+Date: 17/07/2025
+Modified: 27/07/2025
+Desc: Initialize Wi‑Fi in Station mode.
+Input: None
+Return: None
+=========================================================================================================*/
 static void wifi_init_sta(void)
 {
     ESP_ERROR_CHECK(nvs_flash_init());
@@ -58,9 +78,17 @@ static void wifi_init_sta(void)
 
     ESP_LOGI(TAG_WIFI, "Connecting to AP \"%s\"…", AP_SSID);
     ESP_ERROR_CHECK(esp_wifi_connect());
-}
+}// eo wifi_init_sta::
 
 // — Send task: read sensors, send CSV over TCP —  
+/*>>> send_task: ======================================================================
+Author: Vraj Patel
+Date: 17/07/2025
+Modified: 27/07/2025
+Desc: Task to read sensor data and send it over TCP.
+Input: void *arg - Task argument (unused).
+Return: None
+=========================================================================================================*/
 static void send_task(void *arg)
 {
     sensor_data_t d;
@@ -109,7 +137,9 @@ static void send_task(void *arg)
 
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
-}
+}// eo send_task::
+
+/*>>> app_main: ====================================================================== */
 
 void app_main(void)
 {
@@ -133,4 +163,4 @@ void app_main(void)
 
     // 4) Start the send task
     xTaskCreate(send_task, "send_task", 4096, NULL, 5, NULL);
-}
+}// eo app_main::

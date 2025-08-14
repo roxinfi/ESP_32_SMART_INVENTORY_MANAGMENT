@@ -1,3 +1,16 @@
+/*=============================================================================
+	File Name:	BMX_20.c
+	Author:		Vraj Patel, Samip Patel
+	Date:		10/07/2025
+	Modified:	None
+	© Fanshawe College, 2025
+
+	Description: This file contains the implementation of the BMX-20 sensor driver,
+    including initialization, configuration, and data reading functions,
+    as well as higher-level APIs for application used for ESP32 development. for Self-Inventory Management.
+=============================================================================*/
+
+
 // BMX_20.c
 #include "BMX_20.h"
 #include "esp_log.h"
@@ -8,6 +21,17 @@ static const char *TAG = "BMX20";
 
 // --- low‑level I2C helpers ----------------------------------------------------
 
+/*>>> i2c_write_reg: ==========================================================
+Author:		Patel Vraj, Samip Patel
+Date:		10/07/2025
+Modified:	None
+Desc:		This function will write a byte to a specific register of the I2C device used for BMX-20 sensor.
+Input: 		- port: I2C port number
+			- addr: I2C device address
+			- reg: Register address to write to
+			- data: Data byte to write
+Returns:	ESP_OK on success, or an error code on failure.
+ ============================================================================*/
 static esp_err_t i2c_write_reg(i2c_port_t port, uint8_t addr, uint8_t reg, uint8_t data)
 {
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
@@ -19,8 +43,19 @@ static esp_err_t i2c_write_reg(i2c_port_t port, uint8_t addr, uint8_t reg, uint8
     esp_err_t err = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(100));
     i2c_cmd_link_delete(cmd);
     return err;
-}
+}// eo i2c_write_reg::
 
+/*>>> i2c_read_bytes: ==========================================================
+Author:		Patel Vraj, Samip Patel
+Date:		10/07/2025
+Modified:	None
+Desc:		This function will read a byte from a specific register of the I2C device used for BMX-20 sensor.
+Input: 		- port: I2C port number
+			- addr: I2C device address
+			- reg: Register address to read from
+			- data: Pointer to store the read data
+Returns:	ESP_OK on success, or an error code on failure.
+ ============================================================================*/
 static esp_err_t i2c_read_bytes(i2c_port_t port, uint8_t addr, uint8_t reg, uint8_t *buf, size_t len)
 {
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
@@ -39,10 +74,19 @@ static esp_err_t i2c_read_bytes(i2c_port_t port, uint8_t addr, uint8_t reg, uint
     esp_err_t err = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(100));
     i2c_cmd_link_delete(cmd);
     return err;
-}
+}// eo i2c_read_bytes::
 
 // --- BMP280 init & temperature ------------------------------------------------
 
+/*>>> bmp280_init: ==========================================================
+Author:		Patel Vraj, Samip Patel
+Date:		10/07/2025
+Modified:	None
+Desc:		This function will initialize the BMP280 sensor by reading its
+			calibration data and configuring the control register.
+Input: 		- dev: Pointer to the BMX-20 device structure
+Returns:	ESP_OK on success, or an error code on failure.
+ ============================================================================*/
 static esp_err_t bmp280_init(bmx20_t *dev)
 {
     uint8_t calib[6];
@@ -58,8 +102,19 @@ static esp_err_t bmp280_init(bmx20_t *dev)
 
     // Configure: osrs_t = 1 (<<5), osrs_p = 0, mode = Normal (3)
     return i2c_write_reg(dev->port, dev->addr_bmp280, 0xF4, (1 << 5) | 3);
-}
+}// eo bmp280_init::
 
+
+/*>>> bmx20_read_temperature: ==========================================================
+Author:		Patel Vraj, Samip Patel
+Date:		10/07/2025
+Modified:	None
+Desc:		This function will initialize the BMX-20 sensor by reading its
+			calibration data and configuring the control register.
+Input: 		- dev: Pointer to the BMX-20 device structure
+			- temperature: Pointer to store the read temperature
+Returns:	ESP_OK on success, or an error code on failure.
+ ============================================================================*/
 esp_err_t bmx20_read_temperature(bmx20_t *dev, float *temperature)
 {
     uint8_t data[3];
@@ -73,10 +128,19 @@ esp_err_t bmx20_read_temperature(bmx20_t *dev, float *temperature)
     int32_t T100 = (dev->t_fine * 5 + 128) >> 8;  // T * 100
     *temperature = T100 / 100.0f;
     return ESP_OK;
-}
+}// eo bmx20_read_temperature::
 
 // --- AHT20 humidity ------------------------------------------------------------
 
+
+/*>>> aht20_trigger_measure: ==========================================================
+Author:		Patel Vraj, Samip Patel
+Date:		10/07/2025
+Modified:	None
+Desc:		This function will trigger a measurement on the AHT20 sensor.
+Input: 		- dev: Pointer to the BMX-20 device structure
+Returns:	ESP_OK on success, or an error code on failure.
+ ============================================================================*/
 static esp_err_t aht20_trigger_measure(bmx20_t *dev)
 {
     const uint8_t cmd[3] = { 0xAC, 0x33, 0x00 };
@@ -88,8 +152,18 @@ static esp_err_t aht20_trigger_measure(bmx20_t *dev)
     esp_err_t err = i2c_master_cmd_begin(dev->port, c, pdMS_TO_TICKS(100));
     i2c_cmd_link_delete(c);
     return err;
-}
+}// eo aht20_trigger_measure::
 
+
+/*>>> bmx20_read_humidity: ==========================================================
+Author:		Patel Vraj, Samip Patel
+Date:		10/07/2025
+Modified:	None
+Desc:		This function will read the humidity from the AHT20 sensor.
+Input: 		- dev: Pointer to the BMX-20 device structure
+			- humidity: Pointer to store the read humidity
+Returns:	ESP_OK on success, or an error code on failure.
+ ============================================================================*/
 esp_err_t bmx20_read_humidity(bmx20_t *dev, float *humidity)
 {
     esp_err_t err = aht20_trigger_measure(dev);
@@ -107,9 +181,18 @@ esp_err_t bmx20_read_humidity(bmx20_t *dev, float *humidity)
                    |  (uint32_t)buf[3];
     *humidity = (raw_h * 100.0f) / (1 << 20);
     return ESP_OK;
-}
+}// eo bmx20_read_humidity::
 
 // --- public init ---------------------------------------------------------------
+
+/*>>> bmx20_init: ==========================================================
+Author:		Patel Vraj, Samip Patel
+Date:		10/07/2025
+Modified:	None
+Desc:		This function will initialize the BMX-20 sensor.
+Input: 		- dev: Pointer to the BMX-20 device structure
+Returns:	ESP_OK on success, or an error code on failure.
+ ============================================================================*/
 
 esp_err_t bmx20_init(bmx20_t *dev,
                      i2c_port_t port,
@@ -130,4 +213,4 @@ esp_err_t bmx20_init(bmx20_t *dev,
     }
     // AHT20 needs no additional init
     return ESP_OK;
-}
+}// eo bmx20_init::

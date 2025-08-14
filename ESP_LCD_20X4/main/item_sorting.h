@@ -1,3 +1,14 @@
+/*=================================================================================================
+File Name:	item_sorting.h
+Author:		Vraj Patel, Mihir Jariwala
+Date:		12/07/2025
+Modified:	None
+© Fanshawe College, 2025
+
+Description: This file contains the interface for the item sorting module,
+including functions for parsing and handling item information.
+=================================================================================================*/
+
 #ifndef ITEM_SORTING_H
 #define ITEM_SORTING_H
 

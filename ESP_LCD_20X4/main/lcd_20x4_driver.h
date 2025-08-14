@@ -1,3 +1,14 @@
+/*======================================================================================================
+File Name:	lcd_20x4_driver.h
+Author:		Vamseedhar Reddy, Samip Patel
+Date:		10/07/2025
+Modified:	None
+© Fanshawe College, 2025
+
+Description: This file contains the interface for the LCD 20x4 driver,
+including function declarations for initializing and controlling the display.
+====================================================================================================*/
+
 // lcd_20x4_driver.h
 #ifndef LCD_20X4_DRIVER_H
 #define LCD_20X4_DRIVER_H
@@ -11,42 +22,42 @@
 #include "driver/gpio.h"
 
 // HD44780 commands
-#define CMD_CLEAR_DISPLAY       0x01
-#define CMD_RETURN_HOME         0x02
-#define CMD_ENTRY_MODE_SET      0x04
-#define CMD_DISPLAY_CONTROL     0x08
-#define CMD_SHIFT               0x10
-#define CMD_FUNCTION_SET        0x20
-#define CMD_SET_CGRAM_ADDR      0x40
-#define CMD_SET_DDRAM_ADDR      0x80
+#define CMD_CLEAR_DISPLAY       0x01 // Clear display
+#define CMD_RETURN_HOME         0x02 // Return home
+#define CMD_ENTRY_MODE_SET      0x04 // Entry mode set
+#define CMD_DISPLAY_CONTROL     0x08 // Display control
+#define CMD_SHIFT               0x10 // Shift
+#define CMD_FUNCTION_SET        0x20 // Function set
+#define CMD_SET_CGRAM_ADDR      0x40 // Set CGRAM address
+#define CMD_SET_DDRAM_ADDR      0x80 // Set DDRAM address
 
 // Entry mode flags
-#define ENTRY_INC       0x02
-#define ENTRY_DEC       0x00
-#define ENTRY_SHIFT_ON  0x01
-#define ENTRY_SHIFT_OFF 0x00
+#define ENTRY_INC       0x02 // Increment
+#define ENTRY_DEC       0x00 // Decrement
+#define ENTRY_SHIFT_ON  0x01 // Shift on
+#define ENTRY_SHIFT_OFF 0x00 // Shift off
 
 // Display control flags
-#define DISP_ON     0x04
-#define DISP_OFF    0x00
-#define CURSOR_ON   0x02
-#define CURSOR_OFF  0x00
-#define BLINK_ON    0x01
-#define BLINK_OFF   0x00
+#define DISP_ON     0x04 // Display on
+#define DISP_OFF    0x00 // Display off
+#define CURSOR_ON   0x02 // Cursor on
+#define CURSOR_OFF  0x00 // Cursor off
+#define BLINK_ON    0x01 // Blink on
+#define BLINK_OFF   0x00 // Blink off
 
 // Shift flags
-#define SHIFT_DISP      0x08
-#define SHIFT_CUR       0x00
-#define SHIFT_LEFT      0x04
-#define SHIFT_RIGHT     0x00
+#define SHIFT_DISP      0x08 // Display shift
+#define SHIFT_CUR       0x00 // Cursor shift
+#define SHIFT_LEFT      0x04 // Left shift
+#define SHIFT_RIGHT     0x00 // Right shift
 
 // Function set flags
-#define FUNC_8BIT   0x10
-#define FUNC_4BIT   0x00
-#define FUNC_2LINE  0x08
-#define FUNC_1LINE  0x00
-#define FUNC_5x10   0x04
-#define FUNC_5x8    0x00
+#define FUNC_8BIT   0x10 // 8-bit interface
+#define FUNC_4BIT   0x00 // 4-bit interface
+#define FUNC_2LINE  0x08 // 2-line display
+#define FUNC_1LINE  0x00 // 1-line display
+#define FUNC_5x10   0x04 // 5x10 dot character font
+#define FUNC_5x8    0x00 // 5x8 dot character font
 
 // PCF8574 control bits
 #define BL_BIT      0b00001000  // backlight
@@ -55,14 +66,14 @@
 #define RS_BIT      0b00000001  // register select
 
 // Timing (in µs)
-#define LCD_DELAY_POWER_ON_US    50000
-#define LCD_DELAY_INIT1_US        4500
-#define LCD_DELAY_INIT2_US        4500
-#define LCD_DELAY_INIT3_US         200
-#define LCD_DELAY_CLEAR_US       2000
-#define LCD_DELAY_HOME_US        2000
-#define LCD_DELAY_ENABLE_PULSE_US   1
-#define LCD_DELAY_ENABLE_SETTLE_US  50
+#define LCD_DELAY_POWER_ON_US    50000 // Power on delay count
+#define LCD_DELAY_INIT1_US        4500  // Initialization step 1 delay count
+#define LCD_DELAY_INIT2_US        4500  // Initialization step 2 delay count
+#define LCD_DELAY_INIT3_US         200  // Initialization step 3 delay count
+#define LCD_DELAY_CLEAR_US       2000  // Clear display delay count
+#define LCD_DELAY_HOME_US        2000  // Return home delay count
+#define LCD_DELAY_ENABLE_PULSE_US   1 // Enable pulse delay count
+#define LCD_DELAY_ENABLE_SETTLE_US  50 // Enable settle delay count
 
 typedef struct {
     i2c_port_t    port;
@@ -70,7 +81,7 @@ typedef struct {
     bool          backlight;
     uint8_t       rows;
     uint8_t       cols;
-} lcd_20x4_driver_t;
+} lcd_20x4_driver_t; // LCD 20x4 driver structure
 
 /**
  * @brief Initialize both the I²C bus and the LCD itself.

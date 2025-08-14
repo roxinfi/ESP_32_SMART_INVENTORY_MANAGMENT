@@ -1,3 +1,14 @@
+/*===================================================================================================
+File Name:	shelf_manager.h
+Author:		Vraj Patel
+Date:		10/07/2025
+Modified:	None
+© Fanshawe College, 2025
+
+Description: This file contains the interface for the shelf manager,
+including functions for managing shelf occupancy and item placement.
+===================================================================================================*/
+
 #ifndef SHELF_MANAGER_H
 #define SHELF_MANAGER_H
 

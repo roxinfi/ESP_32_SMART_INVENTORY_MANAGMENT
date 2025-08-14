@@ -1,3 +1,14 @@
+/*===================================================================================================
+File Name:	main.c
+Author:		Vraj Patel, Vamseedhar Reddy, Samip Patel, Mihir Jariwala
+Date:		17/07/2025
+Modified:	29/07/2025
+© Fanshawe College, 2025
+
+Description: This file contains the main application logic for the Smart shelf Inventory Management project for its Primary Controller,
+including initialization, task management, and event handling.
+===================================================================================================*/
+
 // main.c — ESP_LCD_20X4 (Primary Controller)
 
 #include <string.h>
@@ -21,19 +32,19 @@
 static const char *TAG      = "BARCODE_TEST";
 static const char *TAG_SENS = "SENSOR_LISTENER";
 
-#define AP_SSID     "ESPBarTest"
-#define AP_PASS     "test1234"
-#define TCP_PORT    3334   // barcode scans
-#define SENS_PORT   3333   // occupancy + T/H + spill
+#define AP_SSID     "ESPBarTest" // Access Point SSID
+#define AP_PASS     "test1234"    // Access Point Password
+#define TCP_PORT    3334           // TCP port for barcode scans
+#define SENS_PORT   3333           // TCP port for occupancy + T/H + spill
 
 // Buttons
 #define SW1_GPIO    GPIO_NUM_2    // toggle scan mode
 #define SW2_GPIO    GPIO_NUM_5    // re‑display last scan
 
 // LED indicators
-#define LED_TEMP_GPIO   GPIO_NUM_12
-#define LED_HUM_GPIO    GPIO_NUM_13
-#define LED_SPILL_GPIO  GPIO_NUM_27
+#define LED_TEMP_GPIO   GPIO_NUM_12 // Temperature LED
+#define LED_HUM_GPIO    GPIO_NUM_13   // Humidity LED
+#define LED_SPILL_GPIO  GPIO_NUM_27   // Spill LED
 
 // Thresholds (your choice)
 #define TEMP_LIMIT      25.0f  // °C
@@ -42,38 +53,81 @@ static const char *TAG_SENS = "SENSOR_LISTENER";
 #define DEGREE_SYMBOL   0xDF   // custom ° character code for LCD
 
 // Your LG_spill slot lives at index 9 (0–9 total slots)
-#define LG_SPILL_INDEX 9
+#define LG_SPILL_INDEX 9 // Large liquid spill slot
 
-static item_info_t  s_last_info;
-static char         s_last_code[16];
-static bool         s_has_last   = false;
-static int          s_last_slot  = -1;
-static float        s_temp       = 0.0f;
-static float        s_hum        = 0.0f;
+static item_info_t  s_last_info; // Last scanned item information
+static char         s_last_code[16]; // Last scanned barcode
+static bool         s_has_last   = false; // Flag for last scan presence
+static int          s_last_slot  = -1; // Last occupied slot
+static float        s_temp       = 0.0f; // Current temperature
+static float        s_hum        = 0.0f; // Current humidity
 static bool         s_spill      = false;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+/*>>> is_digits: ======================================================================
+Author: Vraj Patel, Vamseedhar Reddy, Samip Patel, Mihir Jariwala
+Date: 17/07/2025
+Modified: 27/07/2025
+Desc: Check if a string consists only of digits.
+Input: const char *s - The input string to check.
+Return: bool - True if the string is all digits, false otherwise.
+=========================================================================================================*/
 static bool is_digits(const char *s) 
 {
     for (; *s; ++s) if (*s < '0' || *s > '9') return false;
     return true;
-}
+} // eo is_digits::
+
+/*>>> decode_size: ======================================================================
+Author: Vraj Patel, Vamseedhar Reddy, Samip Patel, Mihir Jariwala
+Date: 17/07/2025
+Modified: 29/07/2025
+Desc: Decode a character into an item size.
+Input: char d - The character to decode.
+Return: item_size_t - The decoded item size.
+=========================================================================================================*/
 static item_size_t  decode_size(char d)  
 {
     if      (d >= '0' && d <= '2') return SIZE_SMALL;
     else if (d >= '3' && d <= '6') return SIZE_MEDIUM;
     else                            return SIZE_LARGE;
-}
+} // eo decode_size::
+
+/*>>> decode_type: ======================================================================
+Author: Vraj Patel, Vamseedhar Reddy, Samip Patel, Mihir Jariwala
+Date: 17/07/2025
+Modified: 29/07/2025
+Desc: Decode a character into an item type.
+Input: char d - The character to decode.
+Return: item_type_t - The decoded item type.
+=========================================================================================================*/
 static item_type_t  decode_type(char d)  
 {
     return (d=='0') ? TYPE_FROZEN : TYPE_DRY;
-}
+} // eo decode_type::
+
+/*>>> decode_phase: ======================================================================
+Author: Vraj Patel, Vamseedhar Reddy, Samip Patel, Mihir Jariwala
+Date: 17/07/2025
+Modified: 29/07/2025
+Desc: Decode a character into an item phase.
+Input: char d - The character to decode.
+Return: item_phase_t - The decoded item phase.
+=========================================================================================================*/
 static item_phase_t decode_phase(char d) 
 {
     return (d <= '5') ? PHASE_LIQUID : PHASE_SOLID;
-}
+} // eo decode_phase::
 
 // ─── Wi‑Fi SoftAP ─────────────────────────────────────────────────────────────
+/*>>> wifi_init_softap: ======================================================================
+Author: Vraj Patel, Vamseedhar Reddy, Samip Patel, Mihir Jariwala
+Date: 17/07/2025
+Modified: 29/07/2025
+Desc: Initialize Wi‑Fi in SoftAP mode.
+Input: None
+Return: None
+=========================================================================================================*/
 static void wifi_init_softap(void) // Initialize Wi‑Fi in SoftAP mode 
 {
     ESP_ERROR_CHECK(nvs_flash_init());
@@ -97,9 +151,17 @@ static void wifi_init_softap(void) // Initialize Wi‑Fi in SoftAP mode
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &apcfg));
     ESP_ERROR_CHECK(esp_wifi_start());
     ESP_LOGI(TAG, "SoftAP started. SSID:%s PW:%s", AP_SSID, AP_PASS);
-}
+} // eo wifi_init_softap::
 
 // ─── LCD, Buttons & LEDs ──────────────────────────────────────────────────────
+/*>>> peripherals_init: ======================================================================
+Author: Vraj Patel, Vamseedhar Reddy, Samip Patel, Mihir Jariwala
+Date: 17/07/2025
+Modified: 27/07/2025
+Desc: Initialize peripherals (LCD, buttons, LEDs) and operate the logic accordingly for user interaction.
+Input: lcd_20x4_driver_t *lcd - Pointer to the LCD driver.
+Return: None
+=========================================================================================================*/
 static void peripherals_init(lcd_20x4_driver_t *lcd) {
     // LCD
     ESP_ERROR_CHECK(lcd20x4_init(lcd,I2C_NUM_0,GPIO_NUM_21, GPIO_NUM_22, 100000, 0x27, true, 4, 20));
@@ -130,6 +192,14 @@ static void peripherals_init(lcd_20x4_driver_t *lcd) {
 }
 
 // ─── Scan Task ─────────────────────────────────────────────────────────────────
+/*>>> scan_task: ======================================================================
+Author: Vraj Patel, Vamseedhar Reddy, Samip Patel, Mihir Jariwala
+Date: 17/07/2025
+Modified: 29/07/2025
+Desc: Task to handle barcode scanning, including TCP connection handling for barcode data, Temperature and Humidity readings.
+Input: void *arg - Pointer to the LCD driver.
+Return: None
+=========================================================================================================*/
 static void scan_task(void *arg) 
 {
     lcd_20x4_driver_t *lcd = arg;
@@ -290,9 +360,17 @@ static void scan_task(void *arg)
         lcd20x4_set_cursor(lcd,0,0); lcd20x4_write_string(lcd,"Barcode Sorting");
         lcd20x4_set_cursor(lcd,0,1); lcd20x4_write_string(lcd,"Waiting for scan:");
     }
-}
+}// eo scan_task::
 
 // ─── Sensor Task ──────────────────────────────────────────────────────────────
+/*>>> sensor_task: ======================================================================
+Author: Vraj Patel, Vamseedhar Reddy, Samip Patel, Mihir Jariwala
+Date: 17/07/2025
+Modified: 27/07/2025
+Desc: Task to handle sensor data processing.
+Input: void *arg - Pointer to the LCD driver.
+Return: None
+=========================================================================================================*/
 static void sensor_task(void *arg) 
 {
     (void)arg;
@@ -361,7 +439,9 @@ static void sensor_task(void *arg)
         }
         shutdown(c,0); close(c);
     }
-}
+}// eo sensor_task::
+
+/*>>> app_main: ====================================================================== */
 
 void app_main(void) 
 {
@@ -372,4 +452,4 @@ void app_main(void)
 
     xTaskCreate(scan_task,   "scan",   4096, &lcd,  5, NULL);
     xTaskCreate(sensor_task, "sensor", 4096, NULL, 5, NULL);
-}
+}// eo app_main::
