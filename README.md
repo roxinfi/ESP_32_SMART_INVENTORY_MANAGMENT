@@ -146,7 +146,7 @@ slot1,slot2,...,spill,tempC,humidity
 ---
 
 ## 📚 References & Acknowledgements
-This project uses or is inspired by:
+This project uses the following code and has developed several functions and a library inspired by it:
 - Muhammad Raheel Naseem – *Operating 20x4 I2C LCD with ESP32*  
   https://github.com/MuhammadRaheelNaseem/Operating-20x4-I2C-LCD-With-ESP32
 - peff74 – *ESP AHT20 BMP280*  
